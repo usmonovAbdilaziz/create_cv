@@ -1,4 +1,4 @@
-import { KeyboardOnce, removeKeyboard } from "./keybords/bot.keyboards";
+import { cvKeyboard, KeyboardOnce, removeKeyboard } from "./keybords/bot.keyboards";
 import { BotCommands } from "./commands/bot.commands";
 import projectRouter from "./routes/project.routes";
 import experRouter from "./routes/experien.routes";
@@ -22,10 +22,10 @@ async function main() {
   const port = process.env.PORT || 4000;
 
   // Express routes
-  app.use("/user", userRouter);
-  app.use("/education", eduRouter);
-  app.use("/skills", skillsRouter);
-  app.use("/experien", experRouter);
+  app.use("/api/user", userRouter);
+  app.use("/api/education", eduRouter);
+  app.use("/api/skills", skillsRouter);
+  app.use("/api/experien", experRouter);
   app.use("/project", projectRouter);
   app.listen(port, () => console.log("Server running on port:", port));
 
@@ -39,26 +39,24 @@ async function main() {
       where: { userId: ctx.from.id.toString() },
       data: { phone: contact.phone_number },
     });
-    await ctx.reply("Premium start...", {
-      reply_markup: removeKeyboard(),
+    await ctx.reply("Pastdagi tugmalarni bosib malumotlarni tuldiring....", {
+      reply_markup:await cvKeyboard(),
     });
-    // await ctx.reply(`Pastdagi tugmani bosib saytga kiring`, {
-    //   reply_markup: KeyboardOnce(process.env.WEB_URL!),
-    // });
   });
-
+  
   // Middleware
   bot.use(CheckUser);
   bot.use(
     session({
       initial: (): SessionData => ({
         mode: null,
-
         skills: [],
+        aboutme :[],
         projects: [],
         educations: [],
         experience: [],
-
+        
+        currentDescription:null,
         currentSkill: null,
         currentProjects: null,
         currentEdu: null,

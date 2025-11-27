@@ -14,29 +14,6 @@ export const BotCommands = async (bot: Bot<MyContext>) => {
       reply_markup: removeKeyboard(),
     })
   })
-  bot.command("skills", async (ctx) => {
-    ctx.session.mode = "skills";
-    const id = ctx.from!.id.toString();
-
-    const skills = await prisma.skill.findMany({ where: { userId: id } });
-
-    ctx.reply(
-      "🧠 *Skills bo‘limi*\n\n" +
-      "Kasbiy maxoratingizni quyidagi misoldagidek kiriting:\n" +
-      "JavaScript,Nodejs\n" +
-        `${
-          skills.length === 0
-            ? ""
-            : `Maxoratingiz ruyxati...\n ${skills.map((skill) => {
-                return `\nNomi: ${skill.name} \nDarajasi: ${skill.level}`;
-              })}`
-        }`,
-      {
-        reply_markup:
-          skills.length === 0 ? { remove_keyboard: true } : keyboard("skills"),
-      }
-    );
-  });
   bot.command("info",async(ctx:any)=>{
     const userId = ctx.from.id.toString();
     const user = await prisma.user.findUnique({ where: { userId }, include: { skills: true, projects: true, experiences: true, educations: true } });

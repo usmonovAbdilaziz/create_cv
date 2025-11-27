@@ -1,6 +1,5 @@
 import { prisma } from "../../prisma/lib/prisma";
 import { Keyboard } from "grammy";
-import { KeyboardOnce } from "../keybords/bot.keyboards";
 import { config } from "dotenv";
 import type { MyContext } from "../types/context.types";
 config();
@@ -17,6 +16,7 @@ export const CheckUser = async (ctx: MyContext, next: () => Promise<void>) => {
           name: ctx.from?.first_name + " " + (ctx.from?.last_name || ""),
           username: ctx.from?.username || "",
           phone: "",
+          description:""
         },
       });
     } else if (!existsUser.phone) {

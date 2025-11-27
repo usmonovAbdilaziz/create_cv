@@ -11,7 +11,7 @@ export const keyboards = () => {
 export const removeKeyboard = () => {
   const keyboard = new InlineKeyboard()
     .text("New Resume", "newResume")
-    .text("Ma'lumotlar", "aboutme");
+    .text("Ma'lumotlar", "aboutinfo");
   return keyboard;
 };
 export const keyboard = (route: string) => {
@@ -26,7 +26,7 @@ export const cvKeyboard = async () => {
     .text("/skills")
     .text("/projects")
     .text("/educations")
-    .text("/experience")
+    .text("/experience").text('/aboutme')
     .resized();
   return keyboard;
 };

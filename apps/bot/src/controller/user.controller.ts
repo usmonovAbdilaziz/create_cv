@@ -21,13 +21,21 @@ export class UserController {
   }
   async getOne(req: Request, res: Response) {
     try {
-      const id = String(req.params.id);
-      const user = await prisma.user.findUnique({ where: { userId: id } });
+      const userId = String(req.params.id);
+      const user = await prisma.user.findUnique({
+        where: { userId },
+        include: {
+          skills: true,
+          experiences: true,
+          educations: true,
+          projects: true,
+        },
+      });      
       if (!user) {
         return errorMessage(res, "User not found", 404);
       }
       const payload = {
-        userId: id,
+        userId,
         name: user.name,
       };
       const token = await generateAccessToken(payload);
@@ -45,7 +53,7 @@ export class UserController {
   }
   async deleteUser(req: Request, res: Response) {
     try {
-      const id = req.params.id;
+      const id = String(req.params.id);
       if (!id) {
         return errorMessage(res, "User ID is required", 400);
       }

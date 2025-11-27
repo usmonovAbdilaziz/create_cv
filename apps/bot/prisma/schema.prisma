@@ -14,16 +14,17 @@ datasource db {
 }
 
 model User {
-  id         Int     @id @default(autoincrement())
-  userId     String  @unique
-  name       String
-  username   String? @unique
-  phone      String? @unique
-  educations Education[]
+  id          Int     @id @default(autoincrement())
+  userId      String  @unique
+  name        String
+  username    String? @unique
+  phone       String? @unique
+  description String
+  educations  Education[]
   experiences Experience[]
-  skills    Skill[]
-  projects  Project[]
-  createdAt  DateTime @default(now())
+  skills      Skill[]
+  projects    Project[]
+  createdAt   DateTime @default(now())
 }
 model Education{
   id          Int @id @default(autoincrement())

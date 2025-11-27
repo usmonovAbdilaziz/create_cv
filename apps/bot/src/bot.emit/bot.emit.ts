@@ -10,12 +10,22 @@ export const EmitterBot = async (bot: any) => {
   bot.on("message:text", async (ctx: any) => {
     const message = ctx.message.text;
     const userId = ctx.from.id.toString();
-
-    // === COMMAND MODES ===
+    if (message === "/aboutme") {
+      ctx.session.mode = "aboutme";
+      ctx.session.description = null;
+      return ctx.reply(
+        "Uzingiz xaqingizda malumot kiriting bu cv da About me qismida kurinadi",
+        { reply_markup: keyboards() }
+      );
+    }
     if (message === "/skills") {
+      // === COMMAND MODES ===
       ctx.session.mode = "skills";
       ctx.session.currentSkill = null;
-      return ctx.reply("Skill nomini kiriting:", { reply_markup: keyboards() });
+
+      return ctx.reply("Kasbiy maxoratingiz nomini kiriting: ", {
+        reply_markup: keyboards(),
+      });
     }
 
     if (message === "/projects") {
@@ -89,7 +99,7 @@ export const EmitterBot = async (bot: any) => {
           skill.name = message;
           return ctx.reply(
             `${skill.name} bo‘yicha darajangizni kiriting (Beginner/Intermediate/Advanced/Expert)`
-          );
+          ,{reply_markup:{remove_keyboard:true}});
         }
 
         skill.level = message;
@@ -102,7 +112,7 @@ export const EmitterBot = async (bot: any) => {
         ctx.session.skills = [];
 
         return ctx.reply("✅ Skill saqlandi", {
-          reply_markup: cvKeyboard(),
+          reply_markup:await cvKeyboard(),
         });
 
       // ================= PROJECTS =================
@@ -115,7 +125,7 @@ export const EmitterBot = async (bot: any) => {
 
         if (!proj.name) {
           proj.name = message;
-          return ctx.reply(`"${proj.name}" linkini kiriting:`);
+          return ctx.reply(`"${proj.name}" linkini kiriting:`,{reply_markup:{remove_keyboard:true}});
         }
 
         if (!proj.link) {
@@ -139,7 +149,7 @@ export const EmitterBot = async (bot: any) => {
           ctx.session.projects = [];
 
           return ctx.reply("Project qo‘shildi", {
-            reply_markup: cvKeyboard(),
+            reply_markup:await cvKeyboard(),
           });
         }
 
@@ -161,7 +171,9 @@ export const EmitterBot = async (bot: any) => {
 
         if (!edu.title) {
           edu.title = message;
-          return ctx.reply(`O‘qish joyingiz nomini kiriting...`);
+          return ctx.reply(`O‘qish joyingiz nomini kiriting...`, {
+            reply_markup: { remove_keyboard: true },
+          });
         }
 
         if (!edu.school) {
@@ -193,9 +205,22 @@ export const EmitterBot = async (bot: any) => {
         ctx.session.educations = [];
 
         return ctx.reply("Education qo‘shildi", {
-          reply_markup: cvKeyboard(),
+          reply_markup: await cvKeyboard(),
         });
+    
+      case "aboutme":
+        if (!ctx.session.currentDescription) {
+          ctx.session.currentDescription = message;
 
+          await prisma.user.update({
+            where: { userId }, // qaysi user update qilinadi
+            data: { description: ctx.session.currentDescription }, // qaysi field update qilinadi
+          });
+          ctx.session.mode = null;
+          ctx.session.currentDescription = "";
+          return ctx.reply("Malumot qushildi:", { reply_markup: await cvKeyboard() });
+        }
+        break
       // ================= EXPERIENCE =================
       case "experience":
         if (!ctx.session.currentExperience) {
@@ -210,7 +235,9 @@ export const EmitterBot = async (bot: any) => {
 
         if (!exp.company) {
           exp.company = message;
-          return ctx.reply(`"${exp.company}"da qancha ishlagansiz?`);
+          return ctx.reply(`"${exp.company}"da qancha ishlagansiz?`, {
+            reply_markup: { remove_keyboard: true },
+          });
         }
 
         if (!exp.duration) {
@@ -222,14 +249,14 @@ export const EmitterBot = async (bot: any) => {
 
         exp.description = message;
 
-        const { data } = (await prisma.experience.create({
+        await prisma.experience.create({
           data: { ...exp, userId },
-        })) as any;
+        });
 
         ctx.session.currentExperience = null;
         ctx.session.experience = [];
         return ctx.reply("Experience qo‘shildi", {
-          reply_markup: cvKeyboard(),
+          reply_markup: await cvKeyboard(),
         });
     }
   });
@@ -295,9 +322,12 @@ export const buttons = async (bot: any) => {
   bot.callbackQuery("stop", async (ctx: any) => {
     ctx.session.mode = null; // Skills bo‘limini yopish
     await ctx.answerCallbackQuery("Tugatish tanlandi");
-    await ctx.reply("Tugatildi pastdagilardan birini tanlang", {
-      reply_markup: cvKeyboard(),
-    });
+    await ctx.reply(
+      "Malumotlarni tuliq tuldirgan bulsangiz bouserda kurinishini tanlang,",
+      {
+        reply_markup: KeyboardOnce(url),
+      }
+    );
   });
   bot.callbackQuery("newResume", async (ctx: any) => {
     await ctx.answerCallbackQuery("New Resume tanlandi!");
@@ -319,7 +349,7 @@ export const buttons = async (bot: any) => {
     });
   });
 
-  bot.callbackQuery("aboutme", async (ctx: any) => {
+  bot.callbackQuery("aboutinfo", async (ctx: any) => {
     const user = await prisma.user.findUnique({
       where: { userId: ctx.from.id.toString() },
       include: {
@@ -340,9 +370,11 @@ export const buttons = async (bot: any) => {
         user.educations.length !== 0
       ) {
         await ctx.reply(
-          `Sizning malumotlaringiz.\nSkills\n ${user?.skills
-            ?.map((skill, index) => `${index + 1}. ${skill.name}`)
-            .join(",\n ")|| 'Malumotlar xali tuldirilmagan...'}`
+          `Sizning malumotlaringiz.\nSkills\n ${
+            user?.skills
+              ?.map((skill, index) => `${index + 1}. ${skill.name}`)
+              .join(",\n ") || "Malumotlar xali tuldirilmagan..."
+          }`
         );
         await ctx.reply(
           `Projects\n ${

@@ -5,10 +5,12 @@ import type { Education, Experience, Project, Skill } from "../../generated/pris
 // Define the session data structure
 export interface SessionData {
   mode: "skills" | "educations" | "projects" | "experience" | null;
+  aboutme: never[];
   skills: never[];
   educations: never[];
   projects: never[];
   experience: never[];
+  currentDescription: String | null;
   currentSkill: Skill | null;
   currentProjects: Project | null;
   currentEdu: Education | null;
