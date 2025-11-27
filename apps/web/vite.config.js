@@ -1,7 +1,7 @@
-import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { viteStaticCopy } from "vite-plugin-static-copy";
 import path from "path";
+import { defineConfig } from "vite";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 export default defineConfig({
   plugins: [
@@ -17,8 +17,8 @@ export default defineConfig({
     chunkSizeWarningLimit: 3200,
     rollupOptions: {
       output: {
-        entryFileNames: "assets/[name].js", // xavfsizroq
-        assetFileNames: "assets/[name].css", // xavfsizroq
+        entryFileNames: "assets/[name].js",
+        assetFileNames: "assets/[name].css",
       },
     },
   },
