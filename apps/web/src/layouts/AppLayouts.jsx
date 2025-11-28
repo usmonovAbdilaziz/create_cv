@@ -3,7 +3,7 @@ import CvLayouts from "../components/CvLayouts";
 
 function AppLayouts() {
   return (
-    <div style={{ backgroundColor: "white", margin: "20px", height: "100vh" }}>
+    <div style={{ backgroundColor: "white", margin: "20px", height: "100vh", fontFamily:"sans-serif"}}>
       <div style={{ padding: "20px 0" }}>
         <span className="block" style={{ color: "black" }}>
           <NavLink

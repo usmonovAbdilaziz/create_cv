@@ -26,7 +26,9 @@ function App() {
    if (!userId) return; // null bo‘lsa fetch bo‘lmaydi
    const fetchData = async () => {
      const res = await fetch(`/api/user/${userId}`);
+     
      const data = await res.json();
+     
      setUser(data.data);
      localStorage.setItem("token", data.data.token);
    };

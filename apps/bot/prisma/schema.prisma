@@ -24,6 +24,7 @@ model User {
   experiences Experience[]
   skills      Skill[]
   projects    Project[]
+  pdfHistory  PdfHistory[]
   createdAt   DateTime @default(now())
 }
 model Education{
@@ -59,4 +60,12 @@ model Project{
   name        String
   link        String
   description String
+}
+model PdfHistory{
+  id          Int @id @default(autoincrement())
+  userId      String
+  user        User     @relation(fields: [userId], references: [userId])
+  fileName    String
+  filePath    String
+  createdAt   DateTime @default(now())
 }

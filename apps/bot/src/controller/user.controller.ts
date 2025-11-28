@@ -9,9 +9,9 @@ export class UserController {
       const users = await prisma.user.findMany({
         include: {
           skills: true,
-          experiences: true,
-          educations: true,
           projects: true,
+          educations: true,
+          experiences: true,
         },
       });
       return successMessage(res, users);
@@ -26,9 +26,10 @@ export class UserController {
         where: { userId },
         include: {
           skills: true,
-          experiences: true,
-          educations: true,
           projects: true,
+          pdfHistory:true,
+          educations: true,
+          experiences: true,
         },
       });      
       if (!user) {

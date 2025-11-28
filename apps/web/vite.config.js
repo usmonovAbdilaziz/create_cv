@@ -1,6 +1,7 @@
 import react from "@vitejs/plugin-react";
-import { viteStaticCopy } from "vite-plugin-static-copy";
 import path from "path";
+import { defineConfig } from "vite";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 export default defineConfig({
   plugins: [
@@ -16,12 +17,30 @@ export default defineConfig({
     chunkSizeWarningLimit: 3200,
     rollupOptions: {
       output: {
-        entryFileNames: "assets/[name].js", // xavfsizroq
-        assetFileNames: "assets/[name].css", // xavfsizroq
+        entryFileNames: "assets/[name].js",
+        assetFileNames: "assets/[name].css",
       },
     },
+  },
+  define: {
+    "process.env": {},
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  server: {
+    port: 5173,
+    strictPort: false,
     allowedHosts: [
-      "unsoftening-quadrumanous-gerald.ngrok-free.dev", // ngrok URL
+      "unsoftening-quadrumanous-gerald.ngrok-free.dev", // ngrok host
+      "localhost",
+      "127.0.0.1",
     ],
+    proxy: {
+      "/api": "http://localhost:4000", // backend port
+    },
+   
   },
 });

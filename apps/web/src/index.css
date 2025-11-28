@@ -2,5 +2,21 @@ body {
   margin: 0 !important;
   padding: 0 !important;
   background: transparent !important;
-  font-family: "Roboto";
+  font-family: "Roboto" !important;
+}
+.download-btn {
+  width: 100%;
+  border: 1px solid blue;
+  border-radius: 5px;
+  padding: 7px;
+  margin: 10px 0;
+  background-color: white;
+  color: blue;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.download-btn:hover {
+  background-color: blue;
+  color: white;
 }
