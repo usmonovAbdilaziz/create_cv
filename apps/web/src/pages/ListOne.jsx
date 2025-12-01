@@ -7,13 +7,14 @@ import Loading from "../components/Loading";
 function ListOne() {
   const user = useUserStore((state) => state.user);
   const divRef = useRef(null);
-  const [data, setData] = useState(null);
-  const [louder,setLouder]=useState(false)
-  useEffect(() => {
-    if(!data)return;
-    setData(false)
-    window.Telegram.WebApp.sendData(JSON.stringify(data))
-  },[data]);
+  const [response, setData] = useState(null);
+  const [louder, setLouder] = useState(false);
+  // useEffect(() => {
+  //   if(!data)return;
+
+  //   // window.Telegram.WebApp.sendData(JSON.stringify(data))
+
+  // },[data]);
   const sendPdfToBot = async () => {
     setLouder(true);
     const element = divRef.current;
@@ -49,13 +50,14 @@ function ListOne() {
         method: "POST",
         body: formData,
       });
-
       const data = await res.json();
       setData(data.data);
+      await window.Telegram.WebApp.sendData(JSON.stringify(data.data));
       console.log("Server javobi:", data.data);
     } catch (error) {
       console.error("Upload error:", error);
     }
+    setLouder(false);
   };
 
   return (
@@ -182,7 +184,12 @@ function ListOne() {
                 })}
           </small>
           <h3
-            style={{fontSize:"16px", marginTop: "10px", marginBottom: "0", color: "#01248ee9" }}
+            style={{
+              fontSize: "16px",
+              marginTop: "10px",
+              marginBottom: "0",
+              color: "#01248ee9",
+            }}
           >
             EXPERIENCE{" "}
           </h3>

@@ -19,43 +19,41 @@ import path from "path";
 
 async function main() {
   const app = express();
-  app.use(
-    helmet.contentSecurityPolicy({
-      useDefaults: true,
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: [
-          "'self'",
-          "'unsafe-eval'",
-          "'wasm-unsafe-eval'",
-          "https://telegram.org",
-          "https://t.me",
-        ],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        imgSrc: [
-          "'self'",
-          "data:",
-          "https://ngrok.com",
-          "https://t.me",
-          "https://telegram.org",
-        ],
-        connectSrc: [
-          "'self'",
-          "http://localhost:4000",
-          "wss:",
-          "https://api.telegram.org",
-        ],
-        fontSrc: ["'self'", "data:", "blob:", "https://fonts.gstatic.com"],
-        workerSrc: ["'self'", "blob:"],
-        frameAncestors: ["'self'", "https://*.telegram.org", "https://*.t.me"],
-        baseUri: ["'self'"],
-      },
-    })
-  );
+  // app.use(
+  //   helmet.contentSecurityPolicy({
+  //     useDefaults: true,
+  //     directives: {
+  //       defaultSrc: ["'self'"],
+  //       scriptSrc: [
+  //         "'self'",
+  //         "'unsafe-eval'",
+  //         "'wasm-unsafe-eval'",
+  //         "https://telegram.org",
+  //         "https://t.me",
+  //       ],
+  //       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+  //       imgSrc: [
+  //         "'self'",
+  //         "data:",
+  //         "https://ngrok.com",
+  //         "https://t.me",
+  //         "https://telegram.org",
+  //       ],
+  //       connectSrc: [
+  //         "'self'",
+  //         "http://localhost:4000",
+  //         "wss:",
+  //         "https://api.telegram.org",
+  //       ],
+  //       fontSrc: ["'self'", "data:", "blob:", "https://fonts.gstatic.com"],
+  //       workerSrc: ["'self'", "blob:"],
+  //       frameAncestors: ["'self'", "https://*.telegram.org", "https://*.t.me"],
+  //       baseUri: ["'self'"],
+  //     },
+  //   })
+  // );
 
-  app.use(express.static("public"));
-
-
+  // app.use(express.static("public"));
   app.use(cors());
   app.use(express.json());
   app.use(cookieParser());
@@ -75,6 +73,9 @@ async function main() {
   // Telegram bot
   const bot = new Bot<MyContext>(process.env.BOT_TOKEN!);
 
+  // 1️⃣ WebApp sendData listener — eng yuqorida
+ 
+  // 2️⃣ Contact message (WebAppga aloqasi yo‘q)
   bot.on("message:contact", async (ctx) => {
     const contact = ctx.message.contact;
 
@@ -82,12 +83,13 @@ async function main() {
       where: { userId: ctx.from.id.toString() },
       data: { phone: contact.phone_number },
     });
-    await ctx.reply("Pastdagi tugmalarni bosib malumotlarni tuldiring....", {
+
+    await ctx.reply("Pastdagi tugmalarni bosib ma'lumotlarni to‘ldiring....", {
       reply_markup: await cvKeyboard(),
     });
   });
 
-  // Middleware
+  // 3️⃣ Middlewarelar
   bot.use(CheckUser);
   bot.use(
     session({
@@ -107,12 +109,16 @@ async function main() {
       }),
     })
   );
-
-  // Commands
+  // 4️⃣ Commands
   await BotCommands(bot);
+
+  // 5️⃣ Emitters
   await EmitterBot(bot);
+
+  // 6️⃣ Buttons
   await buttons(bot);
 
+  // 7️⃣ Botni ishga tushirish
   bot.start();
   console.log("Bot running...");
 }

@@ -10,44 +10,47 @@ import path from "path";
 import { InputFile } from "grammy";
 const url = process.env.WEB_URL!;
 export const EmitterBot = async (bot: any) => {
+
   bot.on("message", async (ctx: any) => {
-    if (ctx.message?.web_app_data) {
-      try {
+    if (ctx.message.web_app_data?.data) {
+    try {
+      console.log("Keldi:",ctx.message.web_app_data.data);
+        
+        // return ctx.reply("Data yitib kelmadi");
         const data = JSON.parse(ctx.message.web_app_data.data);
-        const { userId, fileName } = data as any;
-        ctx.reply('Malumot qayta ishlash jarayonida...')
-        // 1️⃣ DB orqali faylni topish
+        const { fileName } = data;
+        console.log("data keldi:", data);
+        
+        await ctx.reply("Malumot qayta ishlash jarayonida...");
+        
         const pdfFile = await prisma.pdfHistory.findFirst({
-          where: { fileName },
-        });
-        if (!pdfFile) return ctx.reply("Fayl topilmadi ❌");
-        const filePath = path.resolve(
-          __dirname,
-          "..",
-          "..",
-          "uploads",
-          pdfFile.fileName
-        );
+        where: { fileName },
+      });
+      if (!pdfFile) return ctx.reply("Fayl topilmadi ❌");
 
-        // 3️⃣ Fayl mavjudligini tekshirish
-        if (!fs.existsSync(filePath)) return ctx.reply("Path topilmadi ❌");
-
-        // 3️⃣ Telegramga fayl yuborish (InputFile orqali)
-        const inputFile = new InputFile(
-          fs.createReadStream(filePath),
-          pdfFile.fileName
-        );
-
-        // 3️⃣ Telegramga yuborish
-        await ctx.api.sendDocument(userId, inputFile);
-
-        // 4️⃣ WebApp query javobi
-       await ctx.reply("Fayl muvaffaqiyatli yuborildi ✅");
-      } catch (err) {
-        console.error("Send file error:", err);
-        ctx.reply("Fayl yuborishda xatolik yuz berdi, qayta urinib ko‘ring ❌");
-      }
+      const filePath = path.resolve(
+        __dirname,
+        "..",
+        "..",
+        "uploads",
+        pdfFile.fileName
+      );
+      if (!fs.existsSync(filePath)) return ctx.reply("Path topilmadi ❌");
+      
+      const inputFile = new InputFile(
+        fs.createReadStream(filePath),
+        pdfFile.fileName
+      );
+      
+      // userId ni ctx.message.from.id dan olamiz
+      await ctx.api.sendDocument(ctx.message.from.id, inputFile);
+      
+      await ctx.reply("Fayl muvaffaqiyatli yuborildi ✅");
+    } catch (err) {
+      console.error("Send file error:", err);
+      await ctx.reply("Fayl yuborishda xatolik yuz berdi ❌");
     }
+  }
   });
 
   bot.on("message:text", async (ctx: any) => {
@@ -71,7 +74,7 @@ export const EmitterBot = async (bot: any) => {
           .map((p: any, i: number) => `${i + 1}. ${p.name}`)
           .join("\n")}`,
         {
-          reply_markup: keyboards(),
+          reply_markup: skill.length === 0 ? "" : keyboards(),
         }
       );
     }
@@ -160,9 +163,16 @@ export const EmitterBot = async (bot: any) => {
         ctx.session.currentSkill = null;
         ctx.session.skills = [];
 
-        return ctx.reply("✅ Skill saqlandi", {
-          reply_markup: await cvKeyboard(),
-        });
+        await ctx.reply(
+          "Skills malumotlari qo‘shildi...  \nMalumotlaringizni tuliq tuldirib bulgan bulsangiz Tugatishni bosing...",
+          {
+            reply_markup: keyboards(),
+          }
+        );
+        return await ctx.reply(
+          "Davom etish uchun pastdagilardan birini tanlang...",
+          { reply_markup: await cvKeyboard() }
+        );
 
       // ================= PROJECTS =================
       case "projects":
@@ -199,9 +209,16 @@ export const EmitterBot = async (bot: any) => {
           ctx.session.currentProjects = null;
           ctx.session.projects = [];
 
-          return ctx.reply("Project qo‘shildi", {
-            reply_markup: await cvKeyboard(),
-          });
+          await ctx.reply(
+            "Projects malumotlari qushildi...  \nMalumotlaringizni tuliq tuldirib bulgan bulsangiz Tugatishni bosing...",
+            {
+              reply_markup: keyboards(),
+            }
+          );
+          return await ctx.reply(
+            "Davom etish uchun pastdagilardan birini tanlang...",
+            { reply_markup: await cvKeyboard() }
+          );
         }
 
         break;
@@ -255,9 +272,16 @@ export const EmitterBot = async (bot: any) => {
         ctx.session.currentEdu = null;
         ctx.session.educations = [];
 
-        return ctx.reply("Education qo‘shildi", {
-          reply_markup: await cvKeyboard(),
-        });
+        await ctx.reply(
+          "Education qo‘shildi...  \nMalumotlaringizni tuliq tuldirib bulgan bulsangiz Tugatishni bosing...",
+          {
+            reply_markup: keyboards(),
+          }
+        );
+        return await ctx.reply(
+          "Davom etish uchun pastdagilardan birini tanlang...",
+          { reply_markup: await cvKeyboard() }
+        );
 
       case "aboutme":
         if (!ctx.session.currentDescription) {
@@ -269,9 +293,16 @@ export const EmitterBot = async (bot: any) => {
           });
           ctx.session.mode = null;
           ctx.session.currentDescription = "";
-          return ctx.reply("Malumot qushildi:", {
-            reply_markup: await cvKeyboard(),
-          });
+          await ctx.reply(
+            "Malumot qushildi...  \nMalumotlaringizni tuliq tuldirib bulgan bulsangiz Tugatishni bosing...",
+            {
+              reply_markup: keyboards(),
+            }
+          );
+          return await ctx.reply(
+            "Davom etish uchun pastdagilardan birini tanlang...",
+            { reply_markup: await cvKeyboard() }
+          );
         }
         break;
       // ================= EXPERIENCE =================
@@ -308,13 +339,16 @@ export const EmitterBot = async (bot: any) => {
 
         ctx.session.currentExperience = null;
         ctx.session.experience = [];
-        return ctx.reply("Experience qo‘shildi", {
-          reply_markup: await cvKeyboard(),
-        });
+        return ctx.reply(
+          "Experience qo‘shildi... \nMalumotlaringizni tuliq tuldirib bulgan bulsangiz Tugatishni bosing...",
+          {
+            reply_markup: await cvKeyboard(),
+          }
+        );
     }
   });
 };
-
+//delete buttons
 export const buttons = async (bot: any) => {
   bot.callbackQuery(/^remove_(.+)$/, async (ctx: any) => {
     const type = ctx.match[1]; // skills yoki projects
@@ -325,10 +359,10 @@ export const buttons = async (bot: any) => {
           userId,
         },
       });
-      await ctx.answerCallbackQuery("Skills malumotlari Tozalandi");
+      await ctx.answerCallbackQuery("Skills malumotlari Tozalandi...");
       await ctx.reply(
         "Malumotlar tozalandi, Pastdagi tugmalardan birini bosib amaliyotni davom ettiring",
-        { reply_markup: cvKeyboard() }
+        { reply_markup: await cvKeyboard() }
       );
       return;
     }
@@ -338,10 +372,10 @@ export const buttons = async (bot: any) => {
           userId,
         },
       });
-      await ctx.answerCallbackQuery("Projects malumotlari Tozalandi");
+      await ctx.answerCallbackQuery("Projects malumotlari Tozalandi...");
       await ctx.reply(
         "Malumotlar tozalandi, Pastdagi tugmalardan birini bosib amaliyotni davom ettiring",
-        { reply_markup: cvKeyboard() }
+        { reply_markup: await cvKeyboard() }
       );
       return;
     }
@@ -351,10 +385,10 @@ export const buttons = async (bot: any) => {
           userId,
         },
       });
-      await ctx.answerCallbackQuery("Experience malumotlari Tozalandi");
+      await ctx.answerCallbackQuery("Experience malumotlari Tozalandi...");
       await ctx.reply(
         "Malumotlar tozalandi, Pastdagi tugmalardan birini bosib amaliyotni davom ettiring",
-        { reply_markup: cvKeyboard() }
+        { reply_markup: await cvKeyboard() }
       );
       return;
     }
@@ -364,17 +398,17 @@ export const buttons = async (bot: any) => {
           userId,
         },
       });
-      await ctx.answerCallbackQuery("Projects malumotlari Tozalandi");
+      await ctx.answerCallbackQuery("Projects malumotlari Tozalandi...");
       await ctx.reply(
         "Malumotlar tozalandi, Pastdagi tugmalardan birini bosib amaliyotni davom ettiring",
-        { reply_markup: cvKeyboard() }
+        { reply_markup: await cvKeyboard() }
       );
       return;
     }
   });
   bot.callbackQuery("stop", async (ctx: any) => {
     ctx.session.mode = null; // Skills bo‘limini yopish
-    await ctx.answerCallbackQuery("Tugatish tanlandi");
+    await ctx.answerCallbackQuery("Tugatish tanlandi!");
     await ctx.reply(
       "Malumotlarni tuliq tuldirgan bulsangiz bouserda kurinishini tanlang,",
       {
